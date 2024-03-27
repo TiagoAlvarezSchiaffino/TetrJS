@@ -8,6 +8,10 @@ const SHAPES = [
     [
         [1, 1],
         [1, 1],
+    ],
+    [
+        [1, 1, 1],
+        [0, 1, 0]
     ]
 ]
 
@@ -25,22 +29,24 @@ class Tetris {
             shape,
         }
 
-        this.place()
-
+        if (!this.check()) { this.gameOver = true } else { this.place() }
     }
 
     place({ remove = false, stick = false } = {}) {
         const { shape } = this.piece
         for(let y = 0; y < shape.length; y++) {
             for(let x = 0; x < shape[0].length; x++) {
+                
+                if (shape[y][x]) {
                 const newY = this.piece.y + y
                 const newX = this.piece.x + x
                 this.board[newY][newX] = remove ? 0 : stick ? 2 : shape[y][x]
+                }
             }
         }
     }
 
-    check({ dx, dy }) {
+    check({ dx = 0, dy = 0, shape = this.piece.shape } = {}) {
         const { shape } = this.piece
         for(let y = 0; y < shape.length; y++) {
             for(let x = 0; x < shape[0].length; x++) {
@@ -65,9 +71,25 @@ class Tetris {
         })
     }
 
-    move({ dx = 0, dy = 0 }) {
+    rotatedShape() {
+        const { shape } = this.piece
+        const rotatedShape = Array(shape[0].length).fill("").map(() => Array(shape.lenght).fill(0))
 
-        const valid = this.check({ dx, dy })
+        for(let y = 0; y < shape.length; y++) {
+            for(let x = 0; x < shape[0].length; x++) {
+                if (shape[y][x]) {
+                    rotatedShape[x][shape[0].length - y - 1] = shape[y][x]
+                }
+            }
+        }
+
+        return rotatedShape
+    }
+
+    move({ dx = 0, dy = 0, rotate = false }) {
+
+        const shape = rotate ? this.rotatedShape() : this.piece.shape
+        const valid = this.check({ dx, dy, shape })
 
         if (!valid && dy) {
             this.place({ stick: true })
@@ -82,6 +104,7 @@ class Tetris {
         this.place({ remove: true })
         this.piece.x += dx
         this.piece.y += dy
+        this.piece.shape = shape
         this.place()
     }
 }
@@ -112,11 +135,22 @@ export default function TetrisGame() {
             if (e.key === 'ArrowRight') {
                 tetris.move({ dx: 1 })
             }
+            if (e.key === 'ArrowUp') {
+                tetris.move({ rotate: true })
+            }
             render({})
         }
         document.addEventListener('keydown', keyDownHandler)
 
         return () => document.removeEventListener('keydown', keyDownHandler)
+    }, [])
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            tetris.move({ dy: 1 })
+            render({})
+        }, 500)
+        return () => clearInterval(interval)
     })
 
     return (
