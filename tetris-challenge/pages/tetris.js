@@ -46,8 +46,7 @@ class Tetris {
         }
     }
 
-    check({ dx = 0, dy = 0, shape = this.piece.shape } = {}) {
-        const { shape } = this.piece
+    check({ dx = 0, dy = 0, shape = this.piece.shape} = {}) {
         for(let y = 0; y < shape.length; y++) {
             for(let x = 0; x < shape[0].length; x++) {
                 const newY = this.piece.y + y + dy
@@ -73,7 +72,7 @@ class Tetris {
 
     rotatedShape() {
         const { shape } = this.piece
-        const rotatedShape = Array(shape[0].length).fill("").map(() => Array(shape.lenght).fill(0))
+        const rotatedShape = Array(shape[0].length).fill("").map(() => Array(shape.length).fill(0))
 
         for(let y = 0; y < shape.length; y++) {
             for(let x = 0; x < shape[0].length; x++) {
@@ -152,6 +151,14 @@ export default function TetrisGame() {
         }, 500)
         return () => clearInterval(interval)
     })
+
+    if (tetris.gameOver) {
+        return (
+            <h1>
+                Game Over
+            </h1>
+        )
+    }
 
     return (
         <>
